@@ -30,38 +30,36 @@ func (l *Lexer) readChar() {
 func (l *Lexer) NextToken() token.Token {
 	var tok token.Token
 	l.skipWhitespace()
-	switch l.c {
-	case '=':
+	switch {
+	case l.c == '=':
 		tok = newToken(token.ASSIGN, l.c)
-	case ';':
+	case l.c == ';':
 		tok = newToken(token.SEMICOLON, l.c)
-	case '(':
+	case l.c == '(':
 		tok = newToken(token.LPAREN, l.c)
-	case ')':
+	case l.c == ')':
 		tok = newToken(token.RPAREN, l.c)
-	case ',':
+	case l.c == ',':
 		tok = newToken(token.COMMA, l.c)
-	case '+':
+	case l.c == '+':
 		tok = newToken(token.PLUS, l.c)
-	case '{':
+	case l.c == '{':
 		tok = newToken(token.LBRACE, l.c)
-	case '}':
+	case l.c == '}':
 		tok = newToken(token.RBRACE, l.c)
-	case 0:
+	case l.c == 0:
 		tok.Literal = ""
 		tok.Type = token.EOF
+	case isLetter(l.c):
+		tok.Literal = l.readIdentifier()
+		tok.Type = token.LookupIdent(tok.Literal)
+		return tok
+	case isDigit(l.c):
+		tok.Type = token.INT
+		tok.Literal = l.readNumber()
+		return tok
 	default:
-		if isLetter(l.c) {
-			tok.Literal = l.readIdentifier()
-			tok.Type = token.LookupIdent(tok.Literal)
-			return tok
-		} else if isDigit(l.c) {
-			tok.Type = token.INT
-			tok.Literal = l.readNumber()
-			return tok
-		} else {
-			tok = newToken(token.ILLEGAL, l.c)
-		}
+		tok = newToken(token.ILLEGAL, l.c)
 	}
 	l.readChar()
 	return tok
